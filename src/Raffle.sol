@@ -74,6 +74,19 @@ contract Raffle is VRFConsumerBaseV2Plus {
         emit RaffleEntered(msg.sender);
     }
 
+    // when should the winner be picked?
+    /**
+     * @dev This is the function that the Chainlinki nodes will call to see
+     * if the lottery is ready to have a winner picked
+     * The following should be true in order for upKeepNeeded to be true;
+     * 1. The time interval has passed between raffle runs
+     * 2. The lottery is open
+     * 3. The contract has ETH
+     * 4. Implicityly, your subscription has LINK
+     * @param - ignored
+     * @return upKeepNeeded - true if its time to restart the lotter
+     * @return - ignored
+     */
     function checkUpKeep(
         bytes calldata /* checkData */
     )
