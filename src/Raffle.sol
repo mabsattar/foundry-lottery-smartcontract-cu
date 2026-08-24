@@ -18,6 +18,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     error Raffle__NotEnoughTime();
     error Raffle__TransferFailed();
     error Raffle__RaffleNotOpen();
+    error Raffle__UpKeepNotNeeded(uint256 balance, uint256 playersLength, uint256 s_raffleState);
 
     /* Enums */
     enum RaffleState {
@@ -88,7 +89,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
      * @return - ignored
      */
     function checkUpKeep(
-        bytes calldata /* checkData */
+        bytes memory /* checkData */
     )
         public
         view
@@ -105,9 +106,16 @@ contract Raffle is VRFConsumerBaseV2Plus {
         return (upKeepNeeded, "");
     }
 
-    function pickWinner() public {
-        if ((block.timestamp - s_lastTimeStamp) < i_interval) {
-            revert Raffle__NotEnoughTime();
+    function performUpKeep(
+        bytes calldata /* performData */
+    )
+        external
+    {
+        // check to see if enough time has passed
+        (bool upKeepNeeded,) = checkUpKeep("");
+
+        if (!upKeepNeeded) {
+            revert Raffle__UpKeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
         }
 
         s_raffleState = RaffleState.CALCULATING;
@@ -123,10 +131,17 @@ contract Raffle is VRFConsumerBaseV2Plus {
             // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
             extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
         });
-        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+        /* uint256 requestId =*/
+        s_vrfCoordinator.requestRandomWords(request);
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
+    function fulfillRandomWords(
+        uint256, /*requestId,*/
+        uint256[] calldata randomWords
+    )
+        internal
+        override
+    {
         //checks
 
         //Effects (Internal Contract State)
