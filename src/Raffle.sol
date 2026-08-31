@@ -15,7 +15,6 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
 contract Raffle is VRFConsumerBaseV2Plus {
     /* Errors */
     error Raffle__NotEnoughEth();
-    error Raffle__NotEnoughTime();
     error Raffle__TransferFailed();
     error Raffle__RaffleNotOpen();
     error Raffle__UpKeepNotNeeded(uint256 balance, uint256 playersLength, uint256 s_raffleState);
@@ -62,7 +61,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     function enterRaffle() public payable {
-        if (msg.value >= i_entranceFee) {
+        if (msg.value < i_entranceFee) {
             revert Raffle__NotEnoughEth();
         }
 
