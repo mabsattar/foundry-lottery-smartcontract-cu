@@ -28,3 +28,11 @@ contract CreateSubscription is Script {
         createSubscriptionUsingConfig();
     }
 }
+
+contract FundSubscription is Script {
+    uint256 public constant FUND_AMOUNT = 3 ether; // 3 LINK
+
+    function FundSubscriptionUsingConfig() public {}
+
+    function run() public {}
+}
