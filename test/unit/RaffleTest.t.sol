@@ -132,9 +132,6 @@ contract RaffleTest is Test {
     // testCheckUpKeepReturnsTrueWhenParametersAreGood
 
     function testCheckUpkeepReturnsTrueWhenParametersGood() public {
-        // Arrange
-        vm.prank(PLAYER);
-        raffle.enterRaffle{value: entranceFee}();
         vm.warp(block.timestamp + interval + 1);
         vm.roll(block.number + 1);
 
@@ -143,5 +140,38 @@ contract RaffleTest is Test {
 
         // Assert
         assert(upkeepNeeded);
+    }
+
+    ////////////////////
+    // Perform UpKeep //
+    ////////////////////
+
+    function testPerformUpKeepCanOnlyRunIfCheckUpKeepIsTrue() public {
+        // Arrange
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        // Act / Assert
+        raffle.performUpKeep("");
+    }
+
+    function testPerformUpKeepRevertsIfCheckUpKeepIsFalse() public {
+        // Arrange
+        uint256 currentBalance = 0;
+        uint256 numPlayers = 0;
+        Raffle.RaffleState rState = raffle.getRaffleState();
+
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+        currentBalance = currentBalance + entranceFee;
+        numPlayers = 1;
+
+        // Act / Assert
+        vm.expectRevert(
+            abi.encodeWithSelector(Raffle.Raffle__UpKeepNotNeeded.selector, currentBalance, numPlayers, rState)
+        );
+        raffle.performUpKeep("");
     }
 }
